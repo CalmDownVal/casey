@@ -23,6 +23,67 @@ function detect(phrase)
 	return null;
 }
 
+function asMap(tokens)
+{
+	const map = {};
+	for (let i = 0; i < tokens.length; ++i)
+	{
+		const acronym = tokens[i];
+		if (acronym.length > 1)
+		{
+			map[acronym] = true;
+		}
+	}
+	return map;
+}
+
+function joinAcronyms(words, acronyms)
+{
+	// map acronyms first for faster lookups
+	const map = asMap(acronyms);
+
+	// find acronyms
+	let buffer;
+	let anchor;
+	for (let i = 0; i < words.length; ++i)
+	{
+		const word = words[i];
+		if (word.length === 1)
+		{
+			if (!buffer)
+			{
+				buffer = [];
+				anchor = i;
+			}
+
+			for (let j = 0; j < buffer.length; ++j)
+			{
+				buffer[j] += word;
+			}
+
+			buffer.push(word);
+		}
+		else if (buffer)
+		{
+			for (let j = 0; j < buffer.length; ++j)
+			{
+				if (map[buffer[j]])
+				{
+					words.splice(anchor, buffer.length, buffer[j]);
+					buffer = null;
+					break;
+				}
+			}
+			buffer = null;
+		}
+	}
+}
+
+function splitAcronyms(words, acronyms)
+{
+	// TODO
+}
+
 function convert(phrase, options)
 {
 	assertPhrase(phrase);
@@ -59,11 +120,10 @@ function convert(phrase, options)
 	// split into lowercased word list
 	const words = cFrom.split(phrase);
 
-	// attempt to restore acronyms
-	if (acronyms && acronyms.length !== 0)
+	// treat acronyms when provided
+	if (cFrom.splitsAcronyms !== cTo.splitsAcronyms && acronyms && acronyms.length !== 0)
 	{
-		// TODO
-		// restoreAcronyms(words, acronyms);
+		(cTo.splitsAcronyms ? splitAcronyms : joinAcronyms)(words, acronyms);
 	}
 
 	// produce the output
