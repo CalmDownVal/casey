@@ -31,7 +31,7 @@ function asMap(tokens)
 		const acronym = tokens[i];
 		if (acronym.length > 1)
 		{
-			map[acronym] = true;
+			map[acronym.toLowerCase()] = true;
 		}
 	}
 	return map;
@@ -43,45 +43,57 @@ function joinAcronyms(words, acronyms)
 	const map = asMap(acronyms);
 
 	// find acronyms
-	let buffer;
-	let anchor;
-	for (let i = 0; i < words.length; ++i)
+	let buffer = '';
+	for (let i = 0; i <= words.length; ++i)
 	{
 		const word = words[i];
-		if (word.length === 1)
+		if (word && word.length === 1)
 		{
-			if (!buffer)
-			{
-				buffer = [];
-				anchor = i;
-			}
-
-			for (let j = 0; j < buffer.length; ++j)
-			{
-				buffer[j] += word;
-			}
-
-			buffer.push(word);
+			buffer += word;
 		}
 		else if (buffer)
 		{
-			for (let j = 0; j < buffer.length; ++j)
+			const length = buffer.length;
+			for (let l = length; l > 1; --l)
 			{
-				if (map[buffer[j]])
+				const until = length - l;
+				for (let j = 0; j <= until; ++j)
 				{
-					words.splice(anchor, buffer.length, buffer[j]);
-					buffer = null;
-					break;
+					const substr = buffer.slice(j, j + l);
+					if (map[substr])
+					{
+						const anchor = i - length + j;
+						words.splice(anchor, l, substr);
+						i -= length + 1;
+						l = 0;
+						break;
+					}
 				}
 			}
-			buffer = null;
+			buffer = '';
 		}
 	}
 }
 
 function splitAcronyms(words, acronyms)
 {
-	// TODO
+	// map acronyms first for faster lookups
+	const map = asMap(acronyms);
+
+	// scan for acronyms
+	for (let i = 0; i < words.length; ++i)
+	{
+		const word = words[i];
+		if (map[word])
+		{
+			const args = [ i, 1 ];
+			for (let j = 0; j < word.length; ++j)
+			{
+				args.push(word[j]);
+			}
+			Array.prototype.splice.apply(words, args);
+		}
+	}
 }
 
 function convert(phrase, options)
