@@ -1,6 +1,6 @@
 {
 	"name": "@calmdownval/casey",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"type": "module",
 	"main": "src/index.mjs",
 	"license": "GPL-3.0-or-later",
