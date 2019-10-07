@@ -3,13 +3,14 @@ import PascalCase from './pascal.mjs';
 import SnakeCase from './snake.mjs';
 import SnakeCapsCase from './snakecaps.mjs';
 import KebabCase from './kebab.mjs';
-import Case from '../Case.mjs';
 
+// the order of these is important for backwards compatibility
+// as the final enumeration values depend on it
 export default
-{
-	[Case.CAMEL] : CamelCase,
-	[Case.PASCAL] : PascalCase,
-	[Case.SNAKE] : SnakeCase,
-	[Case.SNAKE_CAPS] : SnakeCapsCase,
-	[Case.KEBAB] : KebabCase
-};
+[
+	CamelCase,
+	PascalCase,
+	SnakeCase,
+	SnakeCapsCase,
+	KebabCase
+];

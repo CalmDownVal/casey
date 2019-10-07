@@ -30,7 +30,6 @@ function capitalize(word)
 	return String.fromCharCode(upper(word.charCodeAt(0))) + word.slice(1);
 }
 
-
 export function splitByCaps(phrase)
 {
 	const length = phrase.length;

@@ -2,8 +2,9 @@ import { splitBySymbol } from '../shared.mjs';
 
 export default
 {
+	name : 'SNAKE_CAPS',
 	pattern : /^(?:[A-Z][A-Z0-9]*)(?:_+[A-Z][A-Z0-9]*)*_*$/,
-	compose : words =>
+	join : words =>
 	{
 		let result = '';
 		for (let i = 0; i < words.length; ++i)

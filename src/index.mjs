@@ -1,48 +1,33 @@
-import Case from './Case.mjs';
 import cases from './case/index.mjs';
+import Case, { isValidCase } from './Case.mjs';
 
+/**
+ * asserts phrase is a non-empty string
+ */
 function assertPhrase(phrase)
 {
-	if (!phrase || typeof phrase !== 'string')
+	if (!(phrase && typeof phrase === 'string'))
 	{
 		throw new Error('invalid phrase, non-empty string expected');
 	}
 }
 
-function detect(phrase)
+/**
+ * asserts case is a member of the Case enum
+ */
+function assertCase(_case)
 {
-	assertPhrase(phrase);
-	for (const caseKey in cases)
+	if (!isValidCase(_case))
 	{
-		if (cases[caseKey].pattern.test(phrase))
-		{
-			// maps stringify their keys
-			return Number(caseKey);
-		}
+		throw new Error('invalid caseFrom, expected a member of the Case enum');
 	}
-	return null;
 }
 
-function asMap(tokens)
+/**
+ * joins acronyms matching the map scattered in the words list back together
+ */
+function joinAcronyms(words, acronymMap)
 {
-	const map = {};
-	for (let i = 0; i < tokens.length; ++i)
-	{
-		const acronym = tokens[i];
-		if (acronym.length > 1)
-		{
-			map[acronym.toLowerCase()] = true;
-		}
-	}
-	return map;
-}
-
-function joinAcronyms(words, acronyms)
-{
-	// map acronyms first for faster lookups
-	const map = asMap(acronyms);
-
-	// find acronyms
 	let buffer = '';
 	for (let i = 0; i <= words.length; ++i)
 	{
@@ -60,7 +45,7 @@ function joinAcronyms(words, acronyms)
 				for (let j = 0; j <= until; ++j)
 				{
 					const substr = buffer.slice(j, j + l);
-					if (map[substr])
+					if (acronymMap[substr])
 					{
 						const anchor = i - length + j;
 						words.splice(anchor, l, substr);
@@ -75,16 +60,15 @@ function joinAcronyms(words, acronyms)
 	}
 }
 
-function splitAcronyms(words, acronyms)
+/**
+ * scatters acronyms matching the map into single-letter words
+ */
+function splitAcronyms(words, acronymMap)
 {
-	// map acronyms first for faster lookups
-	const map = asMap(acronyms);
-
-	// scan for acronyms
 	for (let i = 0; i < words.length; ++i)
 	{
 		const word = words[i];
-		if (map[word])
+		if (acronymMap[word])
 		{
 			const args = [ i, 1 ];
 			for (let j = 0; j < word.length; ++j)
@@ -96,11 +80,91 @@ function splitAcronyms(words, acronyms)
 	}
 }
 
-function convert(phrase, options)
+/**
+ * detects the case of the input phrase
+ * phrase MUST be a valid non-empty string
+ */
+function detectCase(phrase)
+{
+	for (let i = 0; i !== cases.length; ++i)
+	{
+		if (cases[i].pattern.test(phrase))
+		{
+			return i;
+		}
+	}
+	return null;
+}
+
+/**
+ * validates the given case or falls back to auto-detection if not provided
+ * phrase MUST be a valid non-empty string
+ * @throws when case cannot be determined
+ */
+function getCase(phrase, _case)
+{
+	if (_case !== undefined && _case !== null)
+	{
+		assertCase(_case);
+	}
+	else if (!(_case = detectCase(phrase)))
+	{
+		throw new Error('could not auto-detect the case');
+	}
+
+	return _case;
+}
+
+/**
+ * detects the case of the input phrase
+ * @param {string} phrase
+ * @throws when phrase is empty or not a string
+ */
+export function detect(phrase)
+{
+	assertPhrase(phrase);
+	return detectCase(phrase);
+}
+
+/**
+ * splits the input phrase into an array of words
+ * case will be auto-detected if not provided
+ * @param {string} phrase
+ * @param {Case?} caseFrom
+ */
+export function split(phrase, caseFrom)
+{
+	assertPhrase(phrase);
+	return cases[getCase(phrase, caseFrom)].split(phrase);
+}
+
+/**
+ * joins the word list into a phrase in the specified case
+ * @param {string} phrase
+ * @param {Case} caseTo
+ */
+export function join(words, caseTo)
+{
+	assertCase(caseTo);
+	for (const word of words)
+	{
+		assertPhrase(word);
+	}
+	return cases[caseTo].join(words);
+}
+
+/**
+ * converts the phrase into another case
+ * @param {string} phrase
+ * @param {string[]?} options.acronyms
+ * @param {Case?} options.caseFrom
+ * @param {Case} options.caseTo
+ */
+export function convert(phrase, options)
 {
 	assertPhrase(phrase);
 
-	// unify arguments
+	// allow passing caseTo directly
 	if (typeof options === 'number')
 	{
 		options = { caseTo : options };
@@ -108,38 +172,38 @@ function convert(phrase, options)
 
 	// validate input
 	let { caseFrom, caseTo, acronyms } = options;
-	if (caseFrom === undefined)
-	{
-		caseFrom = detect(phrase);
-		if (caseFrom === null)
-		{
-			throw new Error('could not detect the input case');
-		}
-	}
-
-	const cFrom = cases[caseFrom];
-	if (!cFrom)
-	{
-		throw new Error('invalid case caseFrom');
-	}
-
-	const cTo = cases[caseTo];
-	if (!cTo)
-	{
-		throw new Error('invalid case caseTo');
-	}
+	assertCase(caseTo);
+	caseFrom = getCase(phrase, caseFrom);
 
 	// split into lowercased word list
+	const cFrom = cases[caseFrom];
+	const cTo = cases[caseTo];
 	const words = cFrom.split(phrase);
 
 	// treat acronyms when provided
-	if (cFrom.splitsAcronyms !== cTo.splitsAcronyms && acronyms && acronyms.length !== 0)
+	if (Array.isArray(acronyms) && cFrom.splitsAcronyms !== cTo.splitsAcronyms)
 	{
-		(cTo.splitsAcronyms ? splitAcronyms : joinAcronyms)(words, acronyms);
+		const acronymMap = {};
+		let validCount = 0;
+		for (const acronym of acronyms)
+		{
+			if (acronym.length > 1)
+			{
+				acronymMap[acronym.toLowerCase()] = true;
+				++validCount;
+			}
+		}
+
+		if (validCount !== 0)
+		{
+			(cTo.splitsAcronyms ? splitAcronyms : joinAcronyms)(words, acronymMap);
+		}
 	}
 
 	// produce the output
-	return cTo.compose(words);
+	return cTo.join(words);
 }
 
-export { Case, detect, convert };
+// additional exports
+export { Case };
+export default { Case, detect, split, join, convert };
