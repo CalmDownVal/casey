@@ -34,10 +34,11 @@ Converts a phrase between cases. The options argument can be an object with the 
 
 - `caseTo: Case` - Required. The case to convert the phrase into.
 - `caseFrom?: Case` - If provided, phrase will be treated as a string in the specified case.
-If omitted the function will try to auto-detect the case.
+If omitted the function will attempt to auto-detect the input case. This will throw when
+auto-detection fails.
 - `acronyms?: string[]` - Allows to preserve acronyms across cases (more info below).
 
-You can also pass a member of the `Case` enum instead of the options object. In such case
+You can also pass just a member of the `Case` enum instead of the options object. In such case
 the argument is treated as the `caseTo` option.
 
 ```js
@@ -46,6 +47,16 @@ import { convert, Case } from '@calmdownval/casey';
 // returns: 'some-phrase'
 convert('SomePhrase', Case.KEBAB);
 ```
+
+### `split(phrase: string, caseFrom?: Case): string[]`
+
+Splits a phrase into an array of words. This array is always lowercased. If the second argument
+is omitted the function will attempt to auto-detect the input case. This throw throw when
+auto-detection fails.
+
+### `join(words: string[], caseTo: Case): string`
+
+Joins an array of words into a single phrase in the specified case.
 
 ### Acronym Preservation
 
@@ -75,10 +86,11 @@ convert('FFTHelper', {
 });
 ```
 
-The problem is perhaps not very apparent in the first example, but we do lose the information
-about 'FFT' being an acronym during the conversion. The second example shows why acronyms may give
-undesirable outputs more apparently. Examples 3) and 4) then showcase the usage of the options
-object and its `acronyms` option to tackle this issue.
+The problem is perhaps not very apparent in the first example, but notice we do lose information
+about 'FFT' being an acronym during the conversion. The second example better shows an undesirable
+output caused by an acronym. Examples 3) and 4) showcase the usage of the options object and its
+`acronyms` option to overcome this issue. Please note that all acronyms in this array MUST
+be lowercase for this to function properly.
 
 ## Supported Cases
 

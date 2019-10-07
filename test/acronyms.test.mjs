@@ -7,7 +7,7 @@ describe('acronyms', () =>
 	it('should not affect unknown acronyms', () =>
 	{
 		strictEqual(
-			convert('ThisLGTM', { caseTo : Case.KEBAB, acronyms : [ 'lol' ] }),
+			convert('ThisLGTM', { caseTo : Case.KEBAB, acronyms : [ 'omg' ] }),
 			'this-l-g-t-m');
 	});
 
