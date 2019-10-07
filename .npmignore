@@ -1,5 +1,5 @@
-.eslintrc.json
-*.md
-script/
-other/
-test/
+.vscode
+script
+test
+.eslintrc
+.gitignore
