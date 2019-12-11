@@ -1,5 +1,5 @@
-import cases from './case/index.mjs';
-import Case, { isValidCase } from './Case.mjs';
+import { cases } from './case/index.mjs';
+import { Case, isValidCase } from './Case.mjs';
 
 /**
  * asserts phrase is a non-empty string
@@ -15,11 +15,11 @@ function assertPhrase(phrase)
 /**
  * asserts case is a member of the Case enum
  */
-function assertCase(_case)
+function assertCase(caseIn)
 {
-	if (!isValidCase(_case))
+	if (!isValidCase(caseIn))
 	{
-		throw new Error('invalid caseFrom, expected a member of the Case enum');
+		throw new Error('invalid case, expected a member of the Case enum');
 	}
 }
 
@@ -101,48 +101,32 @@ function detectCase(phrase)
  * phrase MUST be a valid non-empty string
  * @throws when case cannot be determined
  */
-function getCase(phrase, _case)
+function getCase(phrase, caseIn)
 {
-	if (_case !== undefined && _case !== null)
+	if (caseIn !== undefined && caseIn !== null)
 	{
-		assertCase(_case);
+		assertCase(caseIn);
 	}
-	else if (!(_case = detectCase(phrase)))
+	else if (!(caseIn = detectCase(phrase)))
 	{
 		throw new Error('could not auto-detect the case');
 	}
 
-	return _case;
+	return caseIn;
 }
 
-/**
- * detects the case of the input phrase
- * @param {string} phrase
- * @throws when phrase is empty or not a string
- */
 export function detect(phrase)
 {
 	assertPhrase(phrase);
 	return detectCase(phrase);
 }
 
-/**
- * splits the input phrase into an array of words
- * case will be auto-detected if not provided
- * @param {string} phrase
- * @param {Case?} caseFrom
- */
 export function split(phrase, caseFrom)
 {
 	assertPhrase(phrase);
 	return cases[getCase(phrase, caseFrom)].split(phrase);
 }
 
-/**
- * joins the word list into a phrase in the specified case
- * @param {string} phrase
- * @param {Case} caseTo
- */
 export function join(words, caseTo)
 {
 	assertCase(caseTo);
@@ -153,13 +137,6 @@ export function join(words, caseTo)
 	return cases[caseTo].join(words);
 }
 
-/**
- * converts the phrase into another case
- * @param {string} phrase
- * @param {string[]?} options.acronyms
- * @param {Case?} options.caseFrom
- * @param {Case} options.caseTo
- */
 export function convert(phrase, options)
 {
 	assertPhrase(phrase);
@@ -204,6 +181,12 @@ export function convert(phrase, options)
 	return cTo.join(words);
 }
 
-// additional exports
+export function is(phrase, caseIs)
+{
+	assertPhrase(phrase);
+	assertCase(caseIs);
+	return cases[caseIs].pattern.test(phrase);
+}
+
+// additional export
 export { Case };
-export default { Case, detect, split, join, convert };

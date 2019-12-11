@@ -1,6 +1,6 @@
 import { splitBySymbol } from '../shared.mjs';
 
-export default
+export const SnakeCapsCase =
 {
 	name : 'SNAKE_CAPS',
 	pattern : /^(?:[A-Z][A-Z0-9]*)(?:_+[A-Z][A-Z0-9]*)*_*$/,

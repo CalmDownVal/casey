@@ -1,6 +1,6 @@
 import { composeCaps, splitByCaps } from '../shared.mjs';
 
-export default
+export const PascalCase =
 {
 	name : 'PASCAL',
 	pattern : /^(?:[A-Z][a-z0-9]*)+$/,

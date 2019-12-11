@@ -1,6 +1,6 @@
 import { splitBySymbol } from '../shared.mjs';
 
-export default
+export const KebabCase =
 {
 	name : 'KEBAB',
 	pattern : /^(?:[a-z][a-z0-9]*)(?:-+[a-z][a-z0-9]*)*-*$/,

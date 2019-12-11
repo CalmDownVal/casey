@@ -1,18 +1,16 @@
-import cases from './case/index.mjs';
+import { cases } from './case/index.mjs';
 
-// generate the enum object
-const obj = {};
+// generate the enum
+export const Case = {};
 for (let i = 0; i !== cases.length; ++i)
 {
-	obj[cases[i].name] = i;
+	Case[cases[i].name] = i;
 }
 
-Object.seal(obj);
+Object.seal(Case);
 
-// enumeration user input validation
+// user input validation
 export function isValidCase(n)
 {
 	return typeof n === 'number' && n >= 0 && n < cases.length && Number.isInteger(n);
 }
-
-export default obj;
