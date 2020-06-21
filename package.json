@@ -15,7 +15,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/vaclavlahuta/casey.git"
+		"url": "https://github.com/CalmDownVal/casey.git"
 	},
 	"engines": {
 		"node": ">=8.15.0"
